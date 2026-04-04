@@ -13,8 +13,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     <div className="min-h-screen bg-[#fdf6f7] py-20">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8">
         <div className="mb-10">
-          <Link href="/categories" className="text-[#7d1d3f]/60 hover:text-[#7d1d3f] text-sm transition-colors">
-            ← All Categories
+          <Link href="/" className="text-[#7d1d3f]/60 hover:text-[#7d1d3f] text-sm transition-colors">
+            ← Home
           </Link>
         </div>
         <h1 className="text-5xl font-light text-center mb-16 text-[#7d1d3f] font-playfair italic">
