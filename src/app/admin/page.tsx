@@ -13,17 +13,6 @@ interface Product {
   category: string;
 }
 
-const CATEGORIES = [
-  'Rings',
-  'Earrings',
-  'Necklaces',
-  'Bracelets',
-  'Pendants',
-  'Bangles',
-  'Anklets',
-  'Brooches',
-  'Other',
-];
 
 const emptyForm = { name: '', description: '', price: '', image: '', category: '', customCategory: '' };
 
@@ -47,6 +36,16 @@ export default function AdminPage() {
   const [contactSaving, setContactSaving] = useState(false);
   const [contactMsg, setContactMsg] = useState('');
 
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [newCategory, setNewCategory] = useState('');
+  const [editingCategory, setEditingCategory] = useState<{ id: number; name: string } | null>(null);
+  const [categoryMsg, setCategoryMsg] = useState('');
+
+  const fetchCategories = useCallback(async () => {
+    const { data } = await supabase.from('categories').select('*').order('name');
+    setCategories(data ?? []);
+  }, []);
+
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     const res = await fetch('/api/products');
@@ -60,10 +59,11 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     fetchProducts();
+    fetchCategories();
     supabase.from('settings').select('*').single().then(({ data }) => {
       if (data) setContact({ email: data.email || '', phone: data.phone || '', location: data.location || '', instagram: data.instagram || '' });
     });
-  }, [authed, fetchProducts]);
+  }, [authed, fetchProducts, fetchCategories]);
 
   if (!mounted) return <div className="min-h-screen bg-[#fdf6f7]" />;
 
@@ -92,7 +92,7 @@ export default function AdminPage() {
 
   function startEdit(product: Product) {
     setEditingId(product.id);
-    const isKnown = CATEGORIES.includes(product.category);
+    const isKnown = categories.some(c => c.name === product.category);
     setForm({
       name: product.name,
       description: product.description,
@@ -162,6 +162,30 @@ export default function AdminPage() {
     setContactSaving(false);
     setContactMsg(error ? 'Failed to save.' : 'Saved!');
     setTimeout(() => setContactMsg(''), 3000);
+  }
+
+  async function handleAddCategory(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newCategory.trim()) return;
+    const { error } = await supabase.from('categories').insert([{ name: newCategory.trim() }]);
+    if (!error) { setNewCategory(''); fetchCategories(); setCategoryMsg('Category added!'); }
+    else setCategoryMsg(error.message);
+    setTimeout(() => setCategoryMsg(''), 3000);
+  }
+
+  async function handleSaveCategory(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingCategory) return;
+    const { error } = await supabase.from('categories').update({ name: editingCategory.name }).eq('id', editingCategory.id);
+    if (!error) { setEditingCategory(null); fetchCategories(); setCategoryMsg('Category updated!'); }
+    else setCategoryMsg(error.message);
+    setTimeout(() => setCategoryMsg(''), 3000);
+  }
+
+  async function handleDeleteCategory(id: number, name: string) {
+    if (!confirm(`Delete category "${name}"? Products in this category won't be deleted.`)) return;
+    await supabase.from('categories').delete().eq('id', id);
+    fetchCategories();
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -280,9 +304,10 @@ export default function AdminPage() {
                 className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f] bg-white"
               >
                 <option value="">Select a category</option>
-                {CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
+                <option value="Other">+ Other</option>
               </select>
               {form.category === 'Other' && (
                 <input
@@ -424,6 +449,55 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Categories */}
+        <div className="bg-white rounded-2xl shadow-lg border border-[#e8c8cf] p-8">
+          <h2 className="text-xl font-semibold text-stone-800 mb-6">Categories</h2>
+
+          {/* Add new */}
+          <form onSubmit={handleAddCategory} className="flex gap-3 mb-6">
+            <input
+              type="text"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+              placeholder="New category name"
+              className="flex-1 border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+            />
+            <button type="submit" className="bg-[#7d1d3f] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#3b0a1f] transition-all duration-300">
+              Add
+            </button>
+          </form>
+
+          {categoryMsg && <p className="text-green-600 text-sm mb-4">{categoryMsg}</p>}
+
+          {/* List */}
+          <div className="divide-y divide-[#f2dde1]">
+            {categories.map(cat => (
+              <div key={cat.id} className="flex items-center gap-3 py-3">
+                {editingCategory?.id === cat.id ? (
+                  <form onSubmit={handleSaveCategory} className="flex gap-2 flex-1">
+                    <input
+                      type="text"
+                      value={editingCategory.name}
+                      onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                      className="flex-1 border border-[#e8c8cf] rounded-lg px-3 py-1.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f] text-sm"
+                      autoFocus
+                    />
+                    <button type="submit" className="text-[#7d1d3f] font-medium text-sm hover:text-[#3b0a1f] px-2">Save</button>
+                    <button type="button" onClick={() => setEditingCategory(null)} className="text-stone-400 text-sm hover:text-stone-600 px-2">Cancel</button>
+                  </form>
+                ) : (
+                  <>
+                    <span className="flex-1 text-stone-800">{cat.name}</span>
+                    <button onClick={() => setEditingCategory(cat)} className="text-[#7d1d3f] hover:text-[#3b0a1f] font-medium text-sm px-3 py-1 rounded-lg hover:bg-[#f7eef0] transition-colors">Edit</button>
+                    <button onClick={() => handleDeleteCategory(cat.id, cat.name)} className="text-red-500 hover:text-red-600 font-medium text-sm px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">Delete</button>
+                  </>
+                )}
+              </div>
+            ))}
+            {categories.length === 0 && <p className="text-stone-400 text-sm py-4">No categories yet.</p>}
+          </div>
         </div>
 
         {/* Contact Settings */}
