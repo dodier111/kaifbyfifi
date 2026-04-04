@@ -43,7 +43,7 @@ export default function AdminPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const [contact, setContact] = useState({ email: '', phone: '', location: '' });
+  const [contact, setContact] = useState({ email: '', phone: '', location: '', instagram: '' });
   const [contactSaving, setContactSaving] = useState(false);
   const [contactMsg, setContactMsg] = useState('');
 
@@ -61,7 +61,7 @@ export default function AdminPage() {
     if (!authed) return;
     fetchProducts();
     supabase.from('settings').select('*').single().then(({ data }) => {
-      if (data) setContact({ email: data.email || '', phone: data.phone || '', location: data.location || '' });
+      if (data) setContact({ email: data.email || '', phone: data.phone || '', location: data.location || '', instagram: data.instagram || '' });
     });
   }, [authed, fetchProducts]);
 
@@ -458,6 +458,16 @@ export default function AdminPage() {
                 onChange={e => setContact(c => ({ ...c, location: e.target.value }))}
                 className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
                 placeholder="New York, NY"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-600 mb-1">Instagram</label>
+              <input
+                type="text"
+                value={contact.instagram}
+                onChange={e => setContact(c => ({ ...c, instagram: e.target.value }))}
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+                placeholder="@kaifbyfifi"
               />
             </div>
             <div className="md:col-span-3 flex items-center gap-4">
