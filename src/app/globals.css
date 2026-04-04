@@ -12,6 +12,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+.font-playfair {
+  font-family: var(--font-playfair-display), serif;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

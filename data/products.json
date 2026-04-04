@@ -1,0 +1,18 @@
+[
+  {
+    "id": 3,
+    "name": "Classic Gold hoops",
+    "description": "",
+    "price": 200,
+    "image": "/uploads/1775319101245-2azeg5hrbhl.jpg",
+    "category": "Earrings"
+  },
+  {
+    "id": 4,
+    "name": "ring",
+    "description": "",
+    "price": 222.99,
+    "image": "https://drive.google.com/uc?export=view&id=14UrGg_mrWSNIHlUKJf9X1WJq_2JoKzy8",
+    "category": "Earrings"
+  }
+]
