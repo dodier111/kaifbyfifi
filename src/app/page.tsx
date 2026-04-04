@@ -41,10 +41,10 @@ export default async function Home() {
           </div>
           <div className="text-center mt-16">
             <Link
-              href="/categories"
+              href="/products"
               className="inline-block bg-[#7d1d3f] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#3b0a1f] transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              View All Categories
+              View All Products
             </Link>
           </div>
         </div>
