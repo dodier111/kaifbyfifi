@@ -43,6 +43,10 @@ export default function AdminPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  const [contact, setContact] = useState({ email: '', phone: '', location: '' });
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactMsg, setContactMsg] = useState('');
+
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     const res = await fetch('/api/products');
@@ -54,7 +58,11 @@ export default function AdminPage() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (authed) fetchProducts();
+    if (!authed) return;
+    fetchProducts();
+    supabase.from('settings').select('*').single().then(({ data }) => {
+      if (data) setContact({ email: data.email || '', phone: data.phone || '', location: data.location || '' });
+    });
   }, [authed, fetchProducts]);
 
   if (!mounted) return <div className="min-h-screen bg-[#fdf6f7]" />;
@@ -145,6 +153,16 @@ export default function AdminPage() {
     fetchProducts();
   }
 
+
+  async function handleContactSave(e: React.FormEvent) {
+    e.preventDefault();
+    setContactSaving(true);
+    setContactMsg('');
+    const { error } = await supabase.from('settings').update(contact).eq('id', 1);
+    setContactSaving(false);
+    setContactMsg(error ? 'Failed to save.' : 'Saved!');
+    setTimeout(() => setContactMsg(''), 3000);
+  }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -407,6 +425,54 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* Contact Settings */}
+        <div className="bg-white rounded-2xl shadow-lg border border-[#e8c8cf] p-8">
+          <h2 className="text-xl font-semibold text-stone-800 mb-6">Contact Info</h2>
+          <form onSubmit={handleContactSave} className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-stone-600 mb-1">Email</label>
+              <input
+                type="text"
+                value={contact.email}
+                onChange={e => setContact(c => ({ ...c, email: e.target.value }))}
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+                placeholder="info@kaifbyfifi.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-600 mb-1">Phone</label>
+              <input
+                type="text"
+                value={contact.phone}
+                onChange={e => setContact(c => ({ ...c, phone: e.target.value }))}
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+                placeholder="(123) 456-7890"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-600 mb-1">Location</label>
+              <input
+                type="text"
+                value={contact.location}
+                onChange={e => setContact(c => ({ ...c, location: e.target.value }))}
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+                placeholder="New York, NY"
+              />
+            </div>
+            <div className="md:col-span-3 flex items-center gap-4">
+              <button
+                type="submit"
+                disabled={contactSaving}
+                className="bg-[#7d1d3f] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#3b0a1f] transition-all duration-300 shadow-md disabled:opacity-60"
+              >
+                {contactSaving ? 'Saving...' : 'Save Contact Info'}
+              </button>
+              {contactMsg && <span className="text-green-600 text-sm font-medium">{contactMsg}</span>}
+            </div>
+          </form>
+        </div>
+
       </div>
     </div>
   );
