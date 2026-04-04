@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdf6f7;
+  --foreground: #3b0a1f;
+  --maroon: #7d1d3f;
+  --blush: #f2dde1;
 }
 
 @theme inline {
@@ -14,13 +16,6 @@
 
 .font-playfair {
   font-family: var(--font-playfair-display), serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

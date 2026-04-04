@@ -162,29 +162,29 @@ export default function AdminPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm border border-amber-100">
+      <div className="min-h-screen bg-gradient-to-b from-[#fdf6f7] to-[#f7eef0] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm border border-[#e8c8cf]">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-[#7d1d3f] flex items-center justify-center mx-auto mb-4 shadow-lg">
               <span className="text-white text-2xl">💎</span>
             </div>
             <h1 className="text-2xl font-semibold text-stone-800">Admin Panel</h1>
             <p className="text-stone-500 text-sm mt-1">Kaif by Fifi</p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" suppressHydrationWarning>
             <input
               type="password"
               placeholder="Password"
               value={passwordInput}
               onChange={e => setPasswordInput(e.target.value)}
-              className="w-full border border-amber-200 rounded-xl px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full border border-[#e8c8cf] rounded-xl px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
               autoFocus
             />
             {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
             <button
               type="submit"
               disabled={loginLoading}
-              className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white py-3 rounded-xl font-semibold hover:from-amber-700 hover:to-yellow-700 transition-all duration-300 disabled:opacity-60"
+              className="w-full bg-[#7d1d3f] text-white py-3 rounded-xl font-semibold hover:bg-[#3b0a1f] transition-all duration-300 disabled:opacity-60"
             >
               {loginLoading ? 'Checking...' : 'Login'}
             </button>
@@ -195,7 +195,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#fdf6f7] to-[#f7eef0] py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-10">
 
         {/* Header */}
@@ -213,7 +213,7 @@ export default function AdminPage() {
         </div>
 
         {/* Add / Edit Form */}
-        <div className="bg-white rounded-2xl shadow-lg border border-amber-100 p-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-[#e8c8cf] p-8">
           <h2 className="text-xl font-semibold text-stone-800 mb-6">
             {editingId ? 'Edit Product' : 'Add New Product'}
           </h2>
@@ -224,7 +224,7 @@ export default function AdminPage() {
                 type="text"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
                 placeholder="e.g. Diamond Ring"
               />
             </div>
@@ -233,7 +233,7 @@ export default function AdminPage() {
               <select
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value, customCategory: '' }))}
-                className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f] bg-white"
               >
                 <option value="">Select a category</option>
                 {CATEGORIES.map(cat => (
@@ -245,7 +245,7 @@ export default function AdminPage() {
                   type="text"
                   value={form.customCategory}
                   onChange={e => setForm(f => ({ ...f, customCategory: e.target.value }))}
-                  className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 mt-2"
+                  className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f] mt-2"
                   placeholder="Enter custom category"
                   autoFocus
                 />
@@ -259,7 +259,7 @@ export default function AdminPage() {
                 step="0.01"
                 value={form.price}
                 onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
                 placeholder="e.g. 1200"
               />
             </div>
@@ -269,14 +269,14 @@ export default function AdminPage() {
                 type="text"
                 value={form.image}
                 onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-                className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
                 placeholder="https://drive.google.com/uc?export=view&id=..."
               />
               <p className="text-xs text-stone-400 mt-1">
                 Google Drive: Share → Anyone with link → copy ID → <span className="font-mono">...uc?export=view&id=YOUR_ID</span>
               </p>
               {form.image && (
-                <img src={form.image} alt="preview" className="mt-2 h-24 rounded-lg object-cover border border-amber-100" />
+                <img src={form.image} alt="preview" className="mt-2 h-24 rounded-lg object-cover border border-[#e8c8cf]" />
               )}
             </div>
             <div className="md:col-span-2">
@@ -285,7 +285,7 @@ export default function AdminPage() {
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 rows={3}
-                className="w-full border border-amber-200 rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f] resize-none"
                 placeholder="Short description of the piece..."
               />
             </div>
@@ -296,7 +296,7 @@ export default function AdminPage() {
             <div className="md:col-span-2 flex gap-3">
               <button
                 type="submit"
-                className="bg-gradient-to-r from-amber-600 to-yellow-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-amber-700 hover:to-yellow-700 transition-all duration-300 shadow-md"
+                className="bg-[#7d1d3f] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#3b0a1f] transition-all duration-300 shadow-md"
               >
                 {editingId ? 'Save Changes' : 'Add Product'}
               </button>
@@ -314,8 +314,8 @@ export default function AdminPage() {
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
-          <div className="p-6 border-b border-amber-100">
+        <div className="bg-white rounded-2xl shadow-lg border border-[#e8c8cf] overflow-hidden">
+          <div className="p-6 border-b border-[#e8c8cf]">
             <h2 className="text-xl font-semibold text-stone-800">
               Products <span className="text-stone-400 font-normal text-base">({products.length})</span>
             </h2>
@@ -327,7 +327,7 @@ export default function AdminPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-amber-50 text-stone-600 uppercase text-xs tracking-wider">
+                <thead className="bg-[#f7eef0] text-[#7d1d3f] uppercase text-xs tracking-wider">
                   <tr>
                     <th className="px-6 py-4 text-left">Product</th>
                     <th className="px-6 py-4 text-left">Category</th>
@@ -335,17 +335,17 @@ export default function AdminPage() {
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-amber-50">
+                <tbody className="divide-y divide-[#f2dde1]">
                   {products.map(product => (
-                    <tr key={product.id} className="hover:bg-amber-50/40 transition-colors">
+                    <tr key={product.id} className="hover:bg-[#f7eef0]/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {product.image ? (
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-amber-100 flex-shrink-0">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#e8c8cf] flex-shrink-0">
                               <Image src={product.image} alt={product.name} fill sizes="48px" className="object-cover" />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center text-xl flex-shrink-0">💎</div>
+                            <div className="w-12 h-12 rounded-lg bg-[#f2dde1] flex items-center justify-center text-xl flex-shrink-0">💎</div>
                           )}
                           <div>
                             <p className="font-medium text-stone-800">{product.name}</p>
@@ -358,7 +358,7 @@ export default function AdminPage() {
                       <td className="px-6 py-4 text-right space-x-2">
                         <button
                           onClick={() => startEdit(product)}
-                          className="text-amber-600 hover:text-amber-700 font-medium px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors"
+                          className="text-[#7d1d3f] hover:text-[#3b0a1f] font-medium px-3 py-1.5 rounded-lg hover:bg-[#f7eef0] transition-colors"
                         >
                           Edit
                         </button>

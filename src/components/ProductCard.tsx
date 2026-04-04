@@ -133,6 +133,10 @@ function Lightbox({ product, onClose }: { product: Product; onClose: () => void 
   );
 }
 
+function isValidImage(src: string) {
+  return !!src && (src.startsWith('/') || src.startsWith('http://') || src.startsWith('https://'));
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -146,33 +150,39 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <div className="bg-amber-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border border-amber-200 group">
+      <div className="bg-[#fdf6f7] rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#e8c8cf] group hover:-translate-y-1">
         <button
           type="button"
-          className="relative h-72 w-full overflow-hidden block"
-          onClick={openLightbox}
-          onTouchEnd={openLightbox}
-          style={{ cursor: 'zoom-in', WebkitTapHighlightColor: 'transparent' }}
+          className="relative h-72 w-full overflow-hidden block bg-[#f2dde1]"
+          onClick={isValidImage(product.image) ? openLightbox : undefined}
+          onTouchEnd={isValidImage(product.image) ? openLightbox : undefined}
+          style={{ cursor: isValidImage(product.image) ? 'zoom-in' : 'default', WebkitTapHighlightColor: 'transparent' }}
         >
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full">Tap to zoom</span>
-          </div>
+          {isValidImage(product.image) ? (
+            <>
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full">Tap to zoom</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-[#7d1d3f]/30 text-5xl">💎</div>
+          )}
         </button>
         <div className="p-6">
-          <h3 className="text-xl font-semibold text-stone-800 mb-2">{product.name}</h3>
-          <p className="text-stone-600 text-sm mb-4 leading-relaxed">{product.description}</p>
-          <span className="text-2xl font-bold text-stone-800">${product.price.toLocaleString()}</span>
+          <h3 className="text-xl font-semibold text-[#3b0a1f] mb-2 group-hover:text-[#7d1d3f] transition-colors duration-300">{product.name}</h3>
+          <p className="text-[#3b0a1f]/60 text-sm mb-4 leading-relaxed">{product.description}</p>
+          <span className="text-2xl font-bold text-[#7d1d3f]">${product.price.toLocaleString()}</span>
         </div>
       </div>
 
-      {mounted && open && <Lightbox product={product} onClose={() => setOpen(false)} />}
+      {mounted && open && isValidImage(product.image) && <Lightbox product={product} onClose={() => setOpen(false)} />}
     </>
   );
 }
