@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
 interface Product {
   id: number;
@@ -27,6 +28,7 @@ const CATEGORIES = [
 const emptyForm = { name: '', description: '', price: '', image: '', category: '', customCategory: '' };
 
 export default function AdminPage() {
+  const [mounted, setMounted] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -39,6 +41,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -48,9 +51,13 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     if (authed) fetchProducts();
   }, [authed, fetchProducts]);
+
+  if (!mounted) return <div className="min-h-screen bg-[#fdf6f7]" />;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -139,6 +146,23 @@ export default function AdminPage() {
   }
 
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    setFormError('');
+    const ext = file.name.split('.').pop();
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('products').upload(filename, file, { upsert: true });
+    if (error) {
+      setFormError('Upload failed: ' + error.message);
+    } else {
+      const { data } = supabase.storage.from('products').getPublicUrl(filename);
+      setForm(f => ({ ...f, image: data.publicUrl }));
+    }
+    setUploadingImage(false);
+  }
+
   async function handleDelete(id: number, name: string) {
     if (!confirm(`Delete "${name}"?`)) return;
     setSuccessMsg('');
@@ -178,6 +202,8 @@ export default function AdminPage() {
               value={passwordInput}
               onChange={e => setPasswordInput(e.target.value)}
               className="w-full border border-[#e8c8cf] rounded-xl px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
+              data-lpignore="true"
+              data-1p-ignore
               autoFocus
             />
             {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
@@ -264,19 +290,24 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-600 mb-1">Image URL</label>
-              <input
-                type="text"
-                value={form.image}
-                onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-                className="w-full border border-[#e8c8cf] rounded-xl px-4 py-2.5 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#7d1d3f]"
-                placeholder="https://drive.google.com/uc?export=view&id=..."
-              />
-              <p className="text-xs text-stone-400 mt-1">
-                Google Drive: Share → Anyone with link → copy ID → <span className="font-mono">...uc?export=view&id=YOUR_ID</span>
-              </p>
+              <label className="block text-sm font-medium text-stone-600 mb-1">Image</label>
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#e8c8cf] rounded-xl cursor-pointer hover:border-[#7d1d3f] hover:bg-[#fdf6f7] transition-all duration-200 relative overflow-hidden">
+                {form.image ? (
+                  <img src={form.image} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                ) : (
+                  <div className="flex flex-col items-center text-[#7d1d3f]/40 gap-1">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm">{uploadingImage ? 'Uploading...' : 'Click to upload image'}</span>
+                  </div>
+                )}
+                <input type="file" accept="image/*" className="sr-only" onChange={handleImageUpload} disabled={uploadingImage} />
+              </label>
               {form.image && (
-                <img src={form.image} alt="preview" className="mt-2 h-24 rounded-lg object-cover border border-[#e8c8cf]" />
+                <button type="button" onClick={() => setForm(f => ({ ...f, image: '' }))} className="mt-1 text-xs text-red-400 hover:text-red-600 transition-colors">
+                  Remove image
+                </button>
               )}
             </div>
             <div className="md:col-span-2">
@@ -340,7 +371,7 @@ export default function AdminPage() {
                     <tr key={product.id} className="hover:bg-[#f7eef0]/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          {product.image ? (
+                          {product.image && (product.image.startsWith('/') || product.image.startsWith('http')) ? (
                             <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#e8c8cf] flex-shrink-0">
                               <Image src={product.image} alt={product.name} fill sizes="48px" className="object-cover" />
                             </div>

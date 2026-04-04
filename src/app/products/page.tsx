@@ -8,7 +8,7 @@ export default async function Products() {
 
   return (
     <div className="min-h-screen bg-[#fdf6f7] py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8">
         <h1 className="text-5xl font-light text-center mb-16 text-[#7d1d3f] font-playfair italic">
           Our Collections
         </h1>

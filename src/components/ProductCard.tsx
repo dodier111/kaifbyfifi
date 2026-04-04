@@ -140,12 +140,24 @@ function isValidImage(src: string) {
 export default function ProductCard({ product }: ProductCardProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
-  const openLightbox = useCallback((e: React.SyntheticEvent) => {
-    e.preventDefault();
-    setOpen(true);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    const dx = Math.abs(e.changedTouches[0].clientX - touchStart.current.x);
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStart.current.y);
+    // Only open if finger barely moved (tap, not scroll)
+    if (dx < 8 && dy < 8) {
+      e.preventDefault();
+      setOpen(true);
+    }
+    touchStart.current = null;
   }, []);
 
   return (
@@ -153,9 +165,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="bg-[#fdf6f7] rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#e8c8cf] group hover:-translate-y-1">
         <button
           type="button"
-          className="relative h-72 w-full overflow-hidden block bg-[#f2dde1]"
-          onClick={isValidImage(product.image) ? openLightbox : undefined}
-          onTouchEnd={isValidImage(product.image) ? openLightbox : undefined}
+          className="relative h-56 sm:h-72 w-full overflow-hidden block bg-[#f2dde1]"
+          onClick={isValidImage(product.image) ? () => setOpen(true) : undefined}
+          onTouchStart={isValidImage(product.image) ? handleTouchStart : undefined}
+          onTouchEnd={isValidImage(product.image) ? handleTouchEnd : undefined}
           style={{ cursor: isValidImage(product.image) ? 'zoom-in' : 'default', WebkitTapHighlightColor: 'transparent' }}
         >
           {isValidImage(product.image) ? (
