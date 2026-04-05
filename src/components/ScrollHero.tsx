@@ -1,94 +1,153 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useScroll, useTransform, useMotionValueEvent, motion } from 'framer-motion';
 import Link from 'next/link';
 
 const FRAME_COUNT = 240;
+const READY_THRESHOLD = 20; // show animation once first 20 frames are ready
 
-const frames = Array.from({ length: FRAME_COUNT }, (_, i) =>
+const frameSrcs = Array.from({ length: FRAME_COUNT }, (_, i) =>
   `/images/scroll/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`
 );
 
 export default function ScrollHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
-  const currentFrameRef = useRef(0);
+  const bitmapsRef = useRef<(ImageBitmap | null)[]>(new Array(FRAME_COUNT).fill(null));
+  const targetFrameRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+  const [ready, setReady] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   });
 
-  // All useTransform calls at top level (no hooks in JSX)
-  const titleOpacity    = useTransform(scrollYProgress, [0, 0.05, 0.22, 0.30], [0, 1, 1, 0]);
-  const titleY          = useTransform(scrollYProgress, [0, 0.05], [40, 0]);
+  const titleOpacity   = useTransform(scrollYProgress, [0, 0.05, 0.22, 0.30], [0, 1, 1, 0]);
+  const titleY         = useTransform(scrollYProgress, [0, 0.05], [40, 0]);
+  const taglineOpacity = useTransform(scrollYProgress, [0.28, 0.37, 0.50, 0.58], [0, 1, 1, 0]);
+  const taglineY       = useTransform(scrollYProgress, [0.28, 0.37], [30, 0]);
+  const featureOpacity = useTransform(scrollYProgress, [0.56, 0.65, 0.78, 0.86], [0, 1, 1, 0]);
+  const featureY       = useTransform(scrollYProgress, [0.56, 0.65], [30, 0]);
+  const ctaOpacity     = useTransform(scrollYProgress, [0.84, 0.94], [0, 1]);
+  const ctaY           = useTransform(scrollYProgress, [0.84, 0.94], [30, 0]);
+  const scrollIndOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
 
-  const taglineOpacity  = useTransform(scrollYProgress, [0.28, 0.37, 0.50, 0.58], [0, 1, 1, 0]);
-  const taglineY        = useTransform(scrollYProgress, [0.28, 0.37], [30, 0]);
-
-  const featureOpacity  = useTransform(scrollYProgress, [0.56, 0.65, 0.78, 0.86], [0, 1, 1, 0]);
-  const featureY        = useTransform(scrollYProgress, [0.56, 0.65], [30, 0]);
-
-  const ctaOpacity      = useTransform(scrollYProgress, [0.84, 0.94], [0, 1]);
-  const ctaY            = useTransform(scrollYProgress, [0.84, 0.94], [30, 0]);
-
-  const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
-
-  // Preload all frames
+  // Load frames in 4 parallel streams so all 240 load fast
   useEffect(() => {
-    const images: (HTMLImageElement | null)[] = new Array(FRAME_COUNT).fill(null);
-    imagesRef.current = images;
+    let loaded = 0;
+    const bitmaps = bitmapsRef.current;
 
-    frames.forEach((src, i) => {
-      const img = new window.Image();
-      img.onload = () => {
-        images[i] = img;
-        if (i === 0) {
-          const canvas = canvasRef.current;
-          if (!canvas) return;
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          canvas.getContext('2d')?.drawImage(img, 0, 0);
-        }
-      };
-      img.src = src;
-    });
+    function loadFrame(index: number) {
+      return new Promise<void>((resolve) => {
+        const img = new window.Image();
+        img.onload = async () => {
+          try {
+            bitmaps[index] = await createImageBitmap(img);
+          } catch {
+            // fallback: store img element reference via a wrapper
+            bitmaps[index] = null;
+          }
+          loaded++;
+          setLoadedCount(loaded);
+          if (loaded === READY_THRESHOLD) setReady(true);
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = frameSrcs[index];
+      });
+    }
+
+    // 4 parallel loading streams
+    async function loadStream(start: number, step: number) {
+      for (let i = start; i < FRAME_COUNT; i += step) {
+        await loadFrame(i);
+      }
+    }
+
+    loadStream(0, 4);
+    loadStream(1, 4);
+    loadStream(2, 4);
+    loadStream(3, 4);
   }, []);
 
-  // Draw the correct frame on scroll
+  // RAF-throttled canvas draw loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    function draw() {
+      rafRef.current = null;
+      const bitmap = bitmapsRef.current[targetFrameRef.current];
+      if (!bitmap || !canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+      }
+      ctx.drawImage(bitmap, 0, 0);
+    }
+
+    // Draw first available frame
+    draw();
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [ready]);
+
   useMotionValueEvent(scrollYProgress, 'change', (progress) => {
     const index = Math.min(FRAME_COUNT - 1, Math.floor(progress * FRAME_COUNT));
-    if (index === currentFrameRef.current) return;
-    currentFrameRef.current = index;
+    targetFrameRef.current = index;
 
-    const canvas = canvasRef.current;
-    const img = imagesRef.current[index];
-    if (!canvas || !img) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    if (canvas.width !== img.naturalWidth) {
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-    }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+    // Throttle with RAF — only schedule one draw per animation frame
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const canvas = canvasRef.current;
+      const bitmap = bitmapsRef.current[index];
+      if (!canvas || !bitmap) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+      }
+      ctx.drawImage(bitmap, 0, 0);
+    });
   });
+
+  const progressPct = Math.round((loadedCount / FRAME_COUNT) * 100);
 
   return (
     <div ref={containerRef} style={{ height: '350vh' }} className="relative">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
 
-        {/* Canvas — full bleed frame sequence */}
+        {/* Canvas */}
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full"
           style={{ objectFit: 'cover' }}
         />
 
-        {/* Overlay for text readability */}
+        {/* Loading overlay — hides until frames are ready */}
+        {!ready && (
+          <div className="absolute inset-0 bg-[#1a0a0f] flex flex-col items-center justify-center z-20">
+            <p className="text-white/50 text-xs tracking-[0.3em] uppercase mb-6">Loading</p>
+            <div className="w-48 h-px bg-white/10 relative overflow-hidden rounded-full">
+              <div
+                className="absolute inset-y-0 left-0 bg-[#e8c8cf] transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <p className="text-white/30 text-xs mt-3">{progressPct}%</p>
+          </div>
+        )}
+
+        {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/30" />
 
         {/* Phase 1 — Brand name */}
@@ -99,7 +158,7 @@ export default function ScrollHero() {
           <h1 className="text-6xl md:text-8xl font-light italic text-white font-playfair drop-shadow-2xl">
             Kaif by Fifi
           </h1>
-          <p className="mt-4 text-white/80 text-base md:text-xl tracking-[0.3em] uppercase font-light drop-shadow">
+          <p className="mt-4 text-white/80 text-base md:text-xl tracking-[0.3em] uppercase font-light">
             Fine Jewelry
           </p>
         </motion.div>
@@ -153,7 +212,7 @@ export default function ScrollHero() {
 
         {/* Scroll indicator */}
         <motion.div
-          style={{ opacity: scrollIndicatorOpacity }}
+          style={{ opacity: scrollIndOpacity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/60 pointer-events-none"
         >
           <span className="text-xs tracking-[0.2em] uppercase">Scroll</span>
