@@ -34,13 +34,13 @@ export default function AboutPage() {
             <div className="space-y-6 text-[#3b0a1f]/80 leading-relaxed">
               <h2 className="text-3xl font-light italic text-[#7d1d3f] font-playfair">Tradition Meets Modern</h2>
               <p>
-                Kaif by Fifi was born from a deep love of jewelry and a desire to bring timeless craftsmanship to the modern woman. Each piece is thoughtfully designed to celebrate elegance, culture, and individuality.
+                Kaif By FiFi was created from a deep love for jewelry and a vision to make stylish, high-quality pieces accessible to everyone especially students.
               </p>
               <p>
-                We believe jewelry is more than an accessory — it is a reflection of who you are, a story you carry with you. That is why every piece in our collection is crafted with care, precision, and passion.
+                Our collections are carefully selected to bring you a mix of timeless designs and modern trends that fit everyday life, special occasions and everything in between.
               </p>
               <p>
-                From delicate earrings to statement rings, our collections blend traditional inspiration with contemporary design, creating pieces that are both meaningful and beautiful.
+                We believe you shouldn&apos;t have to choose between quality and affordability. That&apos;s why our goal is simple: to offer beautiful, durable, 18k plated and on-trend jewelry at prices that feel comfortable for real lifestyles. From everyday essentials to statement pieces, Kaif By FiFi is here to help you express your style with confidence.
               </p>
             </div>
           </div>
@@ -55,9 +55,9 @@ export default function AboutPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: 'Craftsmanship', desc: 'Every piece is made with attention to detail, ensuring the highest quality in design and finish.' },
-              { title: 'Elegance', desc: 'We create jewelry that is timeless — refined, graceful, and always in style.' },
-              { title: 'Passion', desc: 'Jewelry is our art form. Each collection is created with genuine love and creative dedication.' },
+              { title: 'Quality', desc: 'We carefully select pieces made from durable materials designed for everyday wear.' },
+              { title: 'Affordability', desc: 'Our mission is to offer stylish jewelry at student-friendly prices without compromising on quality.' },
+              { title: 'Style', desc: 'We bring together modern trends and timeless designs so you can find pieces for every occasion.' },
             ].map(({ title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-8 shadow-sm border border-[#e8c8cf] text-center">
                 <h3 className="text-xl font-semibold text-[#7d1d3f] mb-4">{title}</h3>
